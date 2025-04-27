@@ -25,7 +25,10 @@ export default defineNuxtConfig({
     },
   },
 
-  plugins: [resolve('./app/plugins/init.ts')],
+  plugins: [
+    resolve('./app/plugins/init.ts'),
+    resolve('./app/plugins/storeInit.ts')
+  ],
 
   components: [{ path: resolve('./app/components'), pathPrefix: false }],
 
