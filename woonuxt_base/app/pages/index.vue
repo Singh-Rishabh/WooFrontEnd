@@ -4,9 +4,16 @@ import { useStoreService } from '../services/storeService';
 const { siteName, description, shortDescription, siteImage } = useAppConfig();
 const { availableStores, isLoading, error, fetchStores } = useStoreService();
 
+// Flag to prevent multiple fetches that could cause infinite loops
+const hasFetched = ref(false);
+
 // Fetch the stores only once when the component is mounted
 onMounted(async () => {
+  if (hasFetched.value) return;
+  
   console.log('Home page mounted, fetching stores');
+  hasFetched.value = true;
+  
   try {
     await fetchStores();
     console.log('Stores loaded successfully:', availableStores.value.length);

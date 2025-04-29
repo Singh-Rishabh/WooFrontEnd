@@ -10,10 +10,20 @@ export default defineNuxtPlugin({
       
       // Initialize store on app start
       try {
-        await storeService.initializeStore();
+        const success = await storeService.initializeStore();
+        if (!success) {
+          console.warn('Store service initialization returned false. Check the error state.');
+        }
       } catch (err) {
         console.error('Failed to initialize store service:', err);
+        // Log error but don't crash the app
       }
     }
+    
+    return {
+      provide: {
+        storeInitialized: true,
+      },
+    };
   }
 }); 

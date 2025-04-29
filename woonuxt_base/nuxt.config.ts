@@ -27,7 +27,8 @@ export default defineNuxtConfig({
 
   plugins: [
     resolve('./app/plugins/init.ts'),
-    resolve('./app/plugins/storeInit.ts')
+    resolve('./app/plugins/storeInit.ts'),
+    resolve('./app/plugins/storeInitFromQuery.ts')
   ],
 
   components: [{ path: resolve('./app/components'), pathPrefix: false }],
@@ -37,7 +38,7 @@ export default defineNuxtConfig({
   'graphql-client': {
     clients: {
       default: {
-        host: process.env.GQL_HOST || 'http://localhost:4000/graphql',
+        host: process.env.GQL_HOST || 'https://cataloghub.in/graphql',
         corsOptions: { mode: 'cors', credentials: 'include' },
         headers: { Origin: process.env.APP_HOST || 'http://localhost:3000' },
       },
@@ -60,6 +61,14 @@ export default defineNuxtConfig({
       addPage('product-category-page-pager', '/product-category/:categorySlug/page/:pageNumber', 'product-category/[slug].vue');
       addPage('order-received', '/checkout/order-received/:orderId', 'order-summary.vue');
       addPage('order-summary', '/order-summary/:orderId', 'order-summary.vue');
+      
+      // Store-specific routes
+      addPage('store-products', '/store/:storeSlug/products', 'products.vue');
+      addPage('store-products-page', '/store/:storeSlug/products/page/:pageNumber', 'products.vue');
+      addPage('store-categories', '/store/:storeSlug/categories', 'categories.vue');
+      addPage('store-category', '/store/:storeSlug/product-category/:categorySlug', 'product-category/[slug].vue');
+      addPage('store-category-page', '/store/:storeSlug/product-category/:categorySlug/page/:pageNumber', 'product-category/[slug].vue');
+      addPage('store-product', '/store/:storeSlug/product/:productSlug', 'product/[slug].vue');
     },
   },
 
