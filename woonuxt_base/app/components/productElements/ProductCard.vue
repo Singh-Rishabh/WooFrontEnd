@@ -34,11 +34,32 @@ const imagetoDisplay = computed<string>(() => {
   }
   return mainImage.value;
 });
+
+// Check if we're in a store context
+const storeSlug = computed(() => {
+  if (route.params.storeSlug) {
+    return route.params.storeSlug;
+  }
+  if (route.params.slug && route.path.includes('/store/')) {
+    return route.params.slug;
+  }
+  return null;
+});
+
+// Generate the product URL based on context
+const productUrl = computed(() => {
+  const base = `/product/${decodeURIComponent(props.node.slug)}`;
+  // If we're in a store context, add a query parameter
+  if (storeSlug.value) {
+    return `${base}?store=${storeSlug.value}`;
+  }
+  return base;
+});
 </script>
 
 <template>
   <div class="relative group">
-    <NuxtLink v-if="node.slug" :to="`/product/${decodeURIComponent(node.slug)}`" :title="node.name">
+    <NuxtLink v-if="node.slug" :to="productUrl" :title="node.name">
       <SaleBadge :node class="absolute top-2 right-2" />
       <NuxtImg
         v-if="imagetoDisplay"
@@ -55,7 +76,7 @@ const imagetoDisplay = computed<string>(() => {
     </NuxtLink>
     <div class="p-2">
       <StarRating v-if="storeSettings.showReviews" :rating="node.averageRating" :count="node.reviewCount" />
-      <NuxtLink v-if="node.slug" :to="`/product/${decodeURIComponent(node.slug)}`" :title="node.name">
+      <NuxtLink v-if="node.slug" :to="productUrl" :title="node.name">
         <h2 class="mb-2 font-light leading-tight group-hover:text-primary">{{ node.name }}</h2>
       </NuxtLink>
       <ProductPrice class="text-sm" :sale-price="node.salePrice" :regular-price="node.regularPrice" />

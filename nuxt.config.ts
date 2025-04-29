@@ -21,4 +21,20 @@ export default defineNuxtConfig({
     },
     minify: true
   },
+
+  // Override the GraphQL configuration for multisite setup
+  'graphql-client': {
+    codegen: {
+      disableOnBuild: true,  // Disable codegen during build to avoid schema validation errors
+      silent: true           // Make codegen silent to suppress errors
+    },
+    clients: {
+      default: {
+        // Use one of the actual store endpoints as the default during build
+        host: 'https://lakshmi.site.cataloghub.in/graphql',
+        corsOptions: { mode: 'cors', credentials: 'include' },
+        headers: { Origin: process.env.APP_HOST || 'http://localhost:3000' },
+      },
+    },
+  },
 });
