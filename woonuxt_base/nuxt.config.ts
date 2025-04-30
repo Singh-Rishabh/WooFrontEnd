@@ -25,13 +25,19 @@ export default defineNuxtConfig({
     },
   },
 
-  plugins: [resolve('./app/plugins/init.ts')],
+  plugins: [
+    resolve('./app/plugins/init.ts'),
+    resolve('./app/plugins/graphql.ts')
+  ],
 
   components: [{ path: resolve('./app/components'), pathPrefix: false }],
 
   modules: ['woonuxt-settings', 'nuxt-graphql-client', '@nuxtjs/tailwindcss', '@nuxt/icon', '@nuxt/image', '@nuxtjs/i18n'],
 
   'graphql-client': {
+    codegen: {
+      avoidOptionals: true,
+    },
     clients: {
       default: {
         host: process.env.GQL_HOST || 'http://localhost:4000/graphql',
@@ -39,6 +45,7 @@ export default defineNuxtConfig({
         headers: { Origin: process.env.APP_HOST || 'http://localhost:3000' },
       },
     },
+    autoImport: true,
   },
 
   alias: {
