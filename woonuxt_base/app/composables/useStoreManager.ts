@@ -9,6 +9,26 @@ interface Store {
   language: string
 }
 
+// Utility function to extract store slug from site_url
+export const getStoreSlugFromUrl = (siteUrl: string): string => {
+  try {
+    const url = new URL(siteUrl)
+    const hostname = url.hostname
+    
+    // Extract the first part before .site.cataloghub.in
+    const subdomain = hostname.split('.')[0]
+    
+    return subdomain || 'unknown'
+  } catch (error) {
+    console.error('Error parsing site URL:', siteUrl, error)
+    // Fallback to original method if URL parsing fails
+    return siteUrl
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
+  }
+}
+
 export interface GqlClient {
   host: string
   query: (query: string, variables?: any) => Promise<any>
@@ -254,6 +274,7 @@ export const useStoreManager = () => {
     setCurrentStore,
     initializeFromStorage,
     fetchStoreProducts,
-    fetchStoreCategories
+    fetchStoreCategories,
+    getStoreSlugFromUrl
   }
 } 

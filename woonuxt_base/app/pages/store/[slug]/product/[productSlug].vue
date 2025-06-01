@@ -10,7 +10,7 @@ const productSlug = route.params.productSlug as string; // Product slug from rou
 const storeSlug = route.params.slug as string; // Store slug from parent route
 
 // Store management
-const { currentStore, setCurrentStore, stores, fetchStores } = useStoreManager();
+const { currentStore, setCurrentStore, stores, fetchStores, getStoreSlugFromUrl } = useStoreManager();
 
 // Initialize store if needed
 onMounted(async () => {
@@ -19,8 +19,9 @@ onMounted(async () => {
       await fetchStores();
     }
     
+    // Find store by URL-based slug instead of name-based slug
     const store = stores.value.find((s: any) => 
-      s.site_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === storeSlug
+      getStoreSlugFromUrl(s.site_url) === storeSlug
     );
     
     if (store) {

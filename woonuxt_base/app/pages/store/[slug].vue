@@ -89,7 +89,7 @@
 import { ref, watch, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useNuxtApp } from '#app'
-import { useStoreManager } from '../../composables/useStoreManager'
+import { useStoreManager, getStoreSlugFromUrl } from '../../composables/useStoreManager'
 import type { GqlInstance } from '../../composables/useStoreManager'
 import { ProductsOrderByEnum } from '#woo'
 
@@ -267,6 +267,35 @@ const loadStoreData = async () => {
   }
 }
 
+const findStoreBySlug = async (slug: string) => {
+  console.log('🔍 Finding store by slug:', slug)
+  
+  if (!stores.value.length) {
+    console.log('📡 Fetching stores first...')
+    await fetchStores()
+  }
+  
+  // Find store by URL-based slug instead of name-based slug
+  const foundStore = stores.value.find((store: Store) => {
+    const storeSlug = getStoreSlugFromUrl(store.site_url)
+    console.log('🔍 Comparing slugs:', { storeSlug, targetSlug: slug, siteUrl: store.site_url })
+    return storeSlug === slug
+  })
+  
+  if (foundStore) {
+    console.log('✅ Found store:', foundStore.site_name)
+    return foundStore
+  } else {
+    console.log('❌ Store not found for slug:', slug)
+    console.log('Available stores:', stores.value.map((s: Store) => ({ 
+      name: s.site_name, 
+      slug: getStoreSlugFromUrl(s.site_url),
+      url: s.site_url 
+    })))
+    return null
+  }
+}
+
 const initializeStore = async () => {
   if (isInitialized.value) {
     console.log('Store already initialized, skipping...')
@@ -277,13 +306,7 @@ const initializeStore = async () => {
   
   try {
     // Find store in existing stores or fetch if needed
-    let store = stores.value.find((s: Store) => getStoreSlug(s.site_name) === storeSlug.value)
-    
-    if (!store && !stores.value.length) {
-      console.log('📡 Fetching stores...')
-      await fetchStores()
-      store = stores.value.find((s: Store) => getStoreSlug(s.site_name) === storeSlug.value)
-    }
+    let store = await findStoreBySlug(storeSlug.value)
     
     if (store) {
       console.log('✅ Found matching store:', store.site_name)

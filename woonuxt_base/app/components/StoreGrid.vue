@@ -13,7 +13,7 @@
           <h2 class="text-xl font-semibold mb-2">{{ store.site_name }}</h2>
           <p class="text-gray-600 mb-4 truncate">{{ store.site_url }}</p>
           <NuxtLink 
-            :to="`/store/${getStoreSlug(store.site_name)}`"
+            :to="`/store/${getStoreSlugFromUrl(store.site_url)}`"
             class="inline-block bg-primary text-white px-6 py-2 rounded-md hover:bg-primary-dark transition-colors duration-300"
             @click="selectStore(store)"
           >
@@ -27,16 +27,9 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useStoreManager } from '../composables/useStoreManager'
+import { useStoreManager, getStoreSlugFromUrl } from '../composables/useStoreManager'
 
 const { stores, loading, error, fetchStores, setCurrentStore } = useStoreManager()
-
-const getStoreSlug = (name: string): string => {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-}
 
 const selectStore = async (store: any) => {
   console.log('Selecting store:', store.site_name)
