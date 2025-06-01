@@ -219,12 +219,15 @@ const loadStoreData = async () => {
               databaseId
               name
               type
+              slug
               description
               shortDescription
               image {
                 id
                 sourceUrl
+                producCardSourceUrl: sourceUrl(size: WOOCOMMERCE_THUMBNAIL)
                 altText
+                title
               }
               ... on SimpleProduct {
                 price
