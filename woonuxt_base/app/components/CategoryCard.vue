@@ -1,9 +1,23 @@
 <script setup lang="ts">
 const { FALLBACK_IMG } = useHelpers();
+const route = useRoute();
+
 const props = defineProps({
   node: { type: Object, required: true },
   imageLoading: { type: String as PropType<'lazy' | 'eager'>, default: 'lazy' },
 });
+
+// Check if we're in a store context
+const isInStoreContext = computed(() => route.name?.toString().startsWith('store-'));
+const currentStoreSlug = computed(() => isInStoreContext.value ? route.params.slug as string : null);
+
+// Generate store-aware category URL
+const getCategoryUrl = (categorySlug: string) => {
+  if (currentStoreSlug.value) {
+    return `/store/${currentStoreSlug.value}/product-category/${categorySlug}`;
+  }
+  return `/product-category/${categorySlug}`;
+};
 
 const imgWidth = 220;
 const imgHeight = Math.round(imgWidth * 1.125);
@@ -12,7 +26,7 @@ const imgHeight = Math.round(imgWidth * 1.125);
 <template>
   <NuxtLink
     v-if="node"
-    :to="`/product-category/${decodeURIComponent(node.slug)}`"
+    :to="getCategoryUrl(decodeURIComponent(node.slug))"
     class="relative flex justify-center overflow-hidden border border-white rounded-xl item snap-mandatory snap-x">
     <NuxtImg
       :width="imgWidth"

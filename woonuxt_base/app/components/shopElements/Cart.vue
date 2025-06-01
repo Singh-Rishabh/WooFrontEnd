@@ -1,5 +1,18 @@
 <script setup lang="ts">
 const { cart, toggleCart, isUpdatingCart } = useCart();
+const route = useRoute();
+
+// Check if we're in a store context
+const isInStoreContext = computed(() => route.name?.toString().startsWith('store-'));
+const currentStoreSlug = computed(() => isInStoreContext.value ? route.params.slug as string : null);
+
+// Generate store-aware checkout URL
+const getCheckoutUrl = () => {
+  if (currentStoreSlug.value) {
+    return `/store/${currentStoreSlug.value}/checkout`;
+  }
+  return '/checkout';
+};
 </script>
 
 <template>
@@ -20,7 +33,7 @@ const { cart, toggleCart, isUpdatingCart } = useCart();
         <div class="px-8 mb-8">
           <NuxtLink
             class="block p-3 text-lg text-center text-white bg-gray-800 rounded-lg shadow-md justify-evenly hover:bg-gray-900"
-            to="/checkout"
+            :to="getCheckoutUrl()"
             @click.prevent="toggleCart()">
             <span class="mx-2">{{ $t('messages.shop.checkout') }}</span>
             <span v-html="cart.total" />
