@@ -59,18 +59,18 @@ export default defineNuxtConfig({
         pages.push({ name, path, file: resolve(`./app/pages/${file}`) });
       };
 
-      addPage('product-page-pager', '/products/page/:pageNumber', 'products.vue');
-      addPage('product-category-page', '/product-category/:categorySlug', 'product-category/[slug].vue');
-      addPage('product-category-page-pager', '/product-category/:categorySlug/page/:pageNumber', 'product-category/[slug].vue');
-      addPage('order-received', '/checkout/order-received/:orderId', 'order-summary.vue');
-      addPage('order-summary', '/order-summary/:orderId', 'order-summary.vue');
+      addPage('product-page-pager', '/store/:slug/products/page/:pageNumber', 'store/[slug]/products.vue');
+      addPage('product-category-page', '/store/:slug/product-category/:categorySlug', 'store/[slug]/product-category/[categorySlug].vue');
+      addPage('product-category-page-pager', '/store/:slug/product-category/:categorySlug/page/:pageNumber', 'store/[slug]/product-category/[categorySlug].vue');
+      addPage('order-received', '/store/:slug/checkout/order-received/:orderId', 'store/[slug]/order-summary.vue');
+      addPage('order-summary', '/store/:slug/order-summary/:orderId', 'store/[slug]/order-summary.vue');
     },
   },
 
   nitro: {
     routeRules: {
-      '/checkout/order-received/**': { ssr: false },
-      '/order-summary/**': { ssr: false },
+      '/store/*/checkout/order-received/**': { ssr: false },
+      '/store/*/order-summary/**': { ssr: false },
     },
   },
 

@@ -22,7 +22,12 @@
       <section class="container my-16" v-if="categories.length">
         <div class="flex items-end justify-between">
           <h2 class="text-lg font-semibold md:text-2xl">{{ $t('messages.shop.shopByCategory') }}</h2>
-          <NuxtLink class="text-primary" :to="'/store/' + storeSlug + '/categories'">{{ $t('messages.general.viewAll') }}</NuxtLink>
+          <NuxtLink 
+            class="text-primary" 
+            :to="'/store/' + storeSlug + '/categories'"
+          >
+            {{ $t('messages.general.viewAll') }}
+          </NuxtLink>
         </div>
         <div class="grid justify-center grid-cols-2 gap-4 mt-8 md:grid-cols-3 lg:grid-cols-6">
           <CategoryCard v-for="category in categories" :key="category.databaseId" class="w-full" :node="category" />
@@ -63,7 +68,12 @@
       <section class="container my-16" v-if="products.length">
         <div class="flex items-end justify-between">
           <h2 class="text-lg font-semibold md:text-2xl">{{ $t('messages.shop.popularProducts') }}</h2>
-          <NuxtLink class="text-primary" :to="'/store/' + storeSlug + '/products'">{{ $t('messages.general.viewAll') }}</NuxtLink>
+          <NuxtLink 
+            class="text-primary" 
+            :to="'/store/' + storeSlug + '/products'"
+          >
+            {{ $t('messages.general.viewAll') }}
+          </NuxtLink>
         </div>
         <ProductRow :products="products" class="grid-cols-2 md:grid-cols-4 lg:grid-cols-5 mt-8" />
       </section>
@@ -89,8 +99,8 @@
 import { ref, watch, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useNuxtApp } from '#app'
-import { useStoreManager, getStoreSlugFromUrl } from '../../composables/useStoreManager'
-import type { GqlInstance } from '../../composables/useStoreManager'
+import { useStoreManager, getStoreSlugFromUrl } from '../../../composables/useStoreManager'
+import type { GqlInstance } from '../../../composables/useStoreManager'
 import { ProductsOrderByEnum } from '#woo'
 
 interface Store {
@@ -111,10 +121,9 @@ interface Product {
   [key: string]: any;
 }
 
-// Component setup
+// Component setup - Remove restrictive validation
 definePageMeta({
-  name: 'StorePage',
-  keepalive: false
+  name: 'store-slug-index'
 })
 
 const route = useRoute()
@@ -135,7 +144,7 @@ const error = ref<string | null>(null)
 const isInitialized = ref(false)
 
 // Debug log for component setup
-console.log('🔄 Store page component setup started')
+console.log('🔄 Store index page component setup started')
 
 const getStoreSlug = (name: string): string => {
   return name
@@ -338,7 +347,7 @@ const delayedInit = () => {
 
 // Replace the process.client check with proper setup
 onMounted(async () => {
-  console.log('🔄 Store page mounted')
+  console.log('🔄 Store index page mounted')
   if (!currentStore.value || getStoreSlug(currentStore.value.site_name) !== storeSlug.value) {
     console.log('🔄 No current store or different store, initializing...')
     await delayedInit()
