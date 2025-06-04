@@ -88,6 +88,7 @@ export default defineNuxtConfig({
       addPage('explicit-store-products', '/store/:slug/products', 'store/[slug]/products.vue');
       addPage('explicit-store-categories', '/store/:slug/categories', 'store/[slug]/categories.vue');
       addPage('explicit-store-wishlist', '/store/:slug/wishlist', 'store/[slug]/wishlist.vue');
+      addPage('explicit-store-contact', '/store/:slug/contact', 'store/[slug]/contact.vue');
       
       console.log(`🛣️ Total pages after custom routes: ${pages.length}`);
       console.log('🛣️ Store-related pages:', pages.filter(p => p.path?.includes('/store/')).map(p => ({ name: p.name, path: p.path })));
@@ -101,6 +102,7 @@ export default defineNuxtConfig({
       '/store/*/products': { ssr: true },
       '/store/*/categories': { ssr: true },
       '/store/*/wishlist': { ssr: true },
+      '/store/*/contact': { ssr: true },
     },
   },
 
