@@ -55,15 +55,34 @@ export default defineNuxtConfig({
 
   hooks: {
     'pages:extend'(pages) {
+      console.log(`🛣️ Starting route extension. Initial pages: ${pages.length}`);
+      
       const addPage = (name: string, path: string, file: string) => {
-        pages.push({ name, path, file: resolve(`./app/pages/${file}`) });
+        const fullPath = resolve(`./app/pages/${file}`);
+        console.log(`🛣️ Adding route: ${name} -> ${path} (${file})`);
+        console.log(`🛣️ Full file path: ${fullPath}`);
+        pages.push({ name, path, file: fullPath });
       };
 
+      // Remove manual store routes - let file-based routing handle them
+      // addPage('manual-store-products', '/store/:slug/products', 'store/[slug]/products.vue');
+      // addPage('manual-store-categories', '/store/:slug/categories', 'store/[slug]/categories.vue');
+      // addPage('manual-store-wishlist', '/store/:slug/wishlist', 'store/[slug]/wishlist.vue');
+      
+      // Keep only the pagination and special routes that file-based routing can't handle
       addPage('product-page-pager', '/store/:slug/products/page/:pageNumber', 'store/[slug]/products.vue');
       addPage('product-category-page', '/store/:slug/product-category/:categorySlug', 'store/[slug]/product-category/[categorySlug].vue');
       addPage('product-category-page-pager', '/store/:slug/product-category/:categorySlug/page/:pageNumber', 'store/[slug]/product-category/[categorySlug].vue');
       addPage('order-received', '/store/:slug/checkout/order-received/:orderId', 'store/[slug]/order-summary.vue');
       addPage('order-summary', '/store/:slug/order-summary/:orderId', 'store/[slug]/order-summary.vue');
+      
+      // Add explicit routes with required parameters to override file-based optional parameters
+      addPage('explicit-store-products', '/store/:slug/products', 'store/[slug]/products.vue');
+      addPage('explicit-store-categories', '/store/:slug/categories', 'store/[slug]/categories.vue');
+      addPage('explicit-store-wishlist', '/store/:slug/wishlist', 'store/[slug]/wishlist.vue');
+      
+      console.log(`🛣️ Total pages after custom routes: ${pages.length}`);
+      console.log('🛣️ Store-related pages:', pages.filter(p => p.path?.includes('/store/')).map(p => ({ name: p.name, path: p.path })));
     },
   },
 
@@ -71,6 +90,9 @@ export default defineNuxtConfig({
     routeRules: {
       '/store/*/checkout/order-received/**': { ssr: false },
       '/store/*/order-summary/**': { ssr: false },
+      '/store/*/products': { ssr: true },
+      '/store/*/categories': { ssr: true },
+      '/store/*/wishlist': { ssr: true },
     },
   },
 

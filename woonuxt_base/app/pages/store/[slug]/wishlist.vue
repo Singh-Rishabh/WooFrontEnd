@@ -1,9 +1,17 @@
 <script setup lang="ts">
+import { useStoreManager, getStoreSlugFromUrl } from '../../../composables/useStoreManager'
+
 const route = useRoute();
+
+// Define page meta
+definePageMeta({
+  name: 'store-slug-wishlist'
+})
+
 const storeSlug = route.params.slug as string;
 
 // Store management
-const { currentStore, setCurrentStore, stores, fetchStores, getStoreSlugFromUrl } = useStoreManager();
+const { currentStore, setCurrentStore, stores, fetchStores } = useStoreManager();
 
 // Initialize store if needed
 onMounted(async () => {
@@ -21,6 +29,11 @@ onMounted(async () => {
       await setCurrentStore(store);
     }
   }
+});
+
+useHead({
+  title: `Wishlist - ${currentStore.value?.site_name || storeSlug}`,
+  meta: [{ name: 'description', content: `Your wishlist from ${currentStore.value?.site_name || storeSlug}` }],
 });
 </script>
 

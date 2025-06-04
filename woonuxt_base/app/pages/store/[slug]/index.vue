@@ -71,6 +71,7 @@
           <NuxtLink 
             class="text-primary" 
             :to="'/store/' + storeSlug + '/products'"
+            @click="debugProductsNavigation"
           >
             {{ $t('messages.general.viewAll') }}
           </NuxtLink>
@@ -380,6 +381,11 @@ useSeoMeta({
   title: currentStore.value?.site_name || 'Loading Store...',
   description: `Browse products from ${currentStore.value?.site_name}`,
 })
+
+const debugProductsNavigation = () => {
+  console.log('🔄 Debug products navigation called')
+  // Add any necessary debugging logic here
+}
 </script>
 
 <style scoped>
