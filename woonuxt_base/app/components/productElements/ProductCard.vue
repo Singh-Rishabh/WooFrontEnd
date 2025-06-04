@@ -64,12 +64,33 @@ const imagetoDisplay = computed<string>(() => {
         class="rounded-lg object-top object-cover w-full aspect-9/8"
         placeholder
         placeholder-class="blur-xl" />
+      <div v-else class="w-full aspect-9/8 bg-gray-200 rounded-lg flex items-center justify-center">
+        <span class="text-gray-500 text-sm">No Image Available</span>
+      </div>
     </NuxtLink>
+    <div v-else class="cursor-default">
+      <NuxtImg
+        v-if="imagetoDisplay"
+        :width="imgWidth"
+        :height="imgHeight"
+        :src="imagetoDisplay"
+        :alt="node.image?.altText || node.name || 'Product image'"
+        :title="node.image?.title || node.name"
+        :loading="index <= 3 ? 'eager' : 'lazy'"
+        :sizes="`sm:${imgWidth / 2}px md:${imgWidth}px`"
+        class="rounded-lg object-top object-cover w-full aspect-9/8"
+        placeholder
+        placeholder-class="blur-xl" />
+      <div v-else class="w-full aspect-9/8 bg-gray-200 rounded-lg flex items-center justify-center">
+        <span class="text-gray-500 text-sm">No Image Available</span>
+      </div>
+    </div>
     <div class="p-2">
       <StarRating v-if="storeSettings.showReviews" :rating="node.averageRating || 0" :count="node.reviewCount || 0" />
       <NuxtLink v-if="node.slug" :to="getProductUrl(decodeURIComponent(node.slug))" :title="node.name">
         <h2 class="mb-2 font-light leading-tight group-hover:text-primary">{{ node.name }}</h2>
       </NuxtLink>
+      <h2 v-else class="mb-2 font-light leading-tight text-gray-600">{{ node.name }}</h2>
       <ProductPrice class="text-sm" :sale-price="node.salePrice" :regular-price="node.regularPrice" />
     </div>
   </div>

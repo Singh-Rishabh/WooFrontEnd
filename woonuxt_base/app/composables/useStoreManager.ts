@@ -188,12 +188,17 @@ export const useStoreManager = () => {
               databaseId
               name
               type
+              slug
               description
               shortDescription
+              averageRating
+              reviewCount
               image {
                 id
                 sourceUrl
+                producCardSourceUrl: sourceUrl(size: WOOCOMMERCE_THUMBNAIL)
                 altText
+                title
               }
               ... on SimpleProduct {
                 price
