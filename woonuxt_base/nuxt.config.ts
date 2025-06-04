@@ -10,7 +10,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
-      link: [{ rel: 'icon', href: '/logo.svg', type: 'image/svg+xml' }],
+      link: [{ rel: 'icon', href: '/cataloghub-logo.png', type: 'image/png' }],
     },
     pageTransition: { name: 'page', mode: 'default' },
   },

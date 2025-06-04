@@ -3,16 +3,32 @@ const { siteName } = useAppConfig();
 const runtimeConfig = useRuntimeConfig();
 const img = useImage();
 
-const logoUrl = runtimeConfig?.public?.LOGO ? img(runtimeConfig?.public?.LOGO) : null;
-const faviconUrl = '/logo.svg';
+// Use CatalogHub logo by default
+const catalogHubLogo = '/cataloghub-logo.png';
+const customLogo = runtimeConfig?.public?.LOGO;
+const logoUrl = (customLogo && typeof customLogo === 'string') ? img(customLogo) : catalogHubLogo;
 </script>
 
 <template>
   <NuxtLink to="/" class="inline-flex items-center gap-2">
-    <img v-if="logoUrl" :src="logoUrl" alt="Logo" class="object-contain h-10" />
-    <div v-else class="flex items-center gap-2 text-lg font-bold">
-      <img :src="faviconUrl" alt="Logo" width="32" height="32" />
-      <span>{{ siteName }}</span>
-    </div>
+    <img 
+      :src="logoUrl" 
+      alt="CatalogHub Logo" 
+      class="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-200"
+    />
+    <span class="text-lg font-bold text-gray-900 hidden sm:inline">CatalogHub</span>
   </NuxtLink>
 </template>
+
+<style scoped>
+/* Ensure the logo is perfectly circular */
+img {
+  border-radius: 50%;
+}
+
+/* Add a subtle hover effect */
+.inline-flex:hover img {
+  transform: scale(1.05);
+  transition: transform 0.2s ease-in-out;
+}
+</style>
