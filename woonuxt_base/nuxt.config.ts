@@ -15,6 +15,14 @@ export default defineNuxtConfig({
     pageTransition: { name: 'page', mode: 'default' },
   },
 
+  runtimeConfig: {
+    public: {
+      CURRENCY_SYMBOL: '₹',
+      CURRENCY_CODE: 'INR',
+      MAX_PRICE: 100000, // Adjusted for Indian Rupees (100k INR instead of 1k USD)
+    },
+  },
+
   experimental: {
     sharedPrerenderData: true,
     buildCache: true,

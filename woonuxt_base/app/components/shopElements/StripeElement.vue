@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const { cart } = useCart();
 const { stripe } = defineProps(['stripe']);
+const runtimeConfig = useRuntimeConfig();
+const currencyCode = (runtimeConfig?.public?.CURRENCY_CODE as string) || 'inr';
 
 const rawCartTotal = computed(() => cart.value && parseFloat(cart.value.rawTotal as string) * 100);
 const emit = defineEmits(['updateElement']);
@@ -8,7 +10,7 @@ let elements = null as any;
 
 const options = {
   mode: 'payment',
-  currency: 'eur',
+  currency: currencyCode.toLowerCase(),
   amount: rawCartTotal.value,
   // paymentMethodCreation: 'manual',
 };
