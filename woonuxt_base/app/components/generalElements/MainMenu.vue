@@ -13,11 +13,19 @@ const getStoreAwareUrl = (path: string) => {
   }
   return path;
 };
+
+// Store-aware home URL
+const homeUrl = computed(() => {
+  if (currentStoreSlug.value) {
+    return `/store/${currentStoreSlug.value}`;
+  }
+  return '/';
+});
 </script>
 
 <template>
   <nav>
-    <NuxtLink to="/">{{ $t('messages.general.home') }}</NuxtLink>
+    <NuxtLink :to="homeUrl">{{ $t('messages.general.home') }}</NuxtLink>
     <NuxtLink :to="getStoreAwareUrl('/products')">{{ $t('messages.general.allProducts') }}</NuxtLink>
     <NuxtLink :to="getStoreAwareUrl('/categories')">{{ $t('messages.shop.category', 2) }}</NuxtLink>
     <NuxtLink :to="getStoreAwareUrl('/contact')">{{ $t('messages.general.contact') }}</NuxtLink>
