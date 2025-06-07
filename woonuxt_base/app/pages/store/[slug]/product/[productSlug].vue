@@ -12,8 +12,13 @@ const storeSlug = route.params.slug as string; // Store slug from parent route
 // Store management
 const { currentStore, setCurrentStore, stores, fetchStores, getStoreSlugFromUrl } = useStoreManager();
 
-// Initialize store if needed
-onMounted(async () => {
+// Product data state
+const product = ref<Product | null>(null);
+const isLoading = ref(false);
+const loadingError = ref<string | null>(null);
+
+// Initialize store if needed and fetch product data
+const initializeAndFetchProduct = async () => {
   if (!currentStore.value) {
     if (!stores.value.length) {
       await fetchStores();
@@ -26,20 +31,436 @@ onMounted(async () => {
     
     if (store) {
       await setCurrentStore(store);
+    } else {
+      loadingError.value = 'Store not found';
+      return;
     }
   }
+
+  // Fetch product data using the existing GraphQL query but store-aware
+  await fetchProduct();
+};
+
+const fetchProduct = async () => {
+  if (!currentStore.value) {
+    console.error('No current store set');
+    loadingError.value = 'Store not initialized';
+    return;
+  }
+
+  if (isLoading.value) {
+    console.log('Already loading product, skipping...');
+    return;
+  }
+
+  isLoading.value = true;
+  
+  try {
+    console.log('Fetching product for store:', currentStore.value.site_name);
+    
+    // Get the GraphQL client that should be configured for the current store
+    const { $gql } = useNuxtApp();
+    
+    if (!$gql || !($gql as any)?.default) {
+      console.error('GraphQL client not available');
+      loadingError.value = 'GraphQL client not available';
+      return;
+    }
+
+    const gqlClient = ($gql as any).default;
+
+    // Use the existing getProduct query directly from the gql file
+    const query = `
+      query getProduct($slug: ID!) {
+        product(id: $slug, idType: SLUG) {
+          name
+          type
+          databaseId
+          id
+          metaData {
+            id
+            key
+            value
+          }
+          slug
+          sku
+          description
+          rawDescription: description(format: RAW)
+          shortDescription
+          averageRating
+          reviewCount
+          onSale
+          image {
+            id
+            sourceUrl
+            cartSourceUrl: sourceUrl(size: THUMBNAIL)
+            producCardSourceUrl: sourceUrl(size: WOOCOMMERCE_THUMBNAIL)
+            altText
+            title
+          }
+          galleryImages(first: 20) {
+            nodes {
+              id
+              sourceUrl
+              cartSourceUrl: sourceUrl(size: THUMBNAIL)
+              producCardSourceUrl: sourceUrl(size: WOOCOMMERCE_THUMBNAIL)
+              altText
+              title
+              databaseId
+            }
+          }
+          productCategories {
+            nodes {
+              databaseId
+              slug
+              name
+              count
+            }
+          }
+          terms(first: 100) {
+            nodes {
+              taxonomyName
+              slug
+            }
+          }
+          ... on SimpleProduct {
+            name
+            slug
+            price
+            rawPrice: price(format: RAW)
+            date
+            regularPrice
+            rawRegularPrice: regularPrice(format: RAW)
+            salePrice
+            rawSalePrice: salePrice(format: RAW)
+            stockStatus
+            stockQuantity
+            lowStockAmount
+            averageRating
+            weight
+            length
+            width
+            height
+            reviewCount
+            onSale
+            virtual
+            attributes {
+              nodes {
+                variation
+                name
+                id
+                options
+                label
+                scope
+                ... on GlobalProductAttribute {
+                  terms(where: { orderby: MENU_ORDER, order: ASC }) {
+                    nodes {
+                      name
+                      slug
+                      taxonomyName
+                      databaseId
+                    }
+                  }
+                }
+              }
+            }
+          }
+          ... on VariableProduct {
+            name
+            slug
+            price
+            rawPrice: price(format: RAW)
+            date
+            weight
+            length
+            width
+            height
+            averageRating
+            reviewCount
+            onSale
+            regularPrice
+            rawRegularPrice: regularPrice(format: RAW)
+            salePrice
+            rawSalePrice: salePrice(format: RAW)
+            stockStatus
+            totalSales
+            stockQuantity
+            lowStockAmount
+            attributes {
+              nodes {
+                variation
+                name
+                id
+                options
+                label
+                scope
+                ... on GlobalProductAttribute {
+                  terms(where: { orderby: MENU_ORDER, order: ASC }) {
+                    nodes {
+                      name
+                      slug
+                      taxonomyName
+                      databaseId
+                    }
+                  }
+                }
+              }
+            }
+            defaultAttributes {
+              nodes {
+                name
+                attributeId
+                value
+                label
+              }
+            }
+            variations(first: 100) {
+              nodes {
+                name
+                databaseId
+                price
+                regularPrice
+                salePrice
+                rawSalePrice: salePrice(format: RAW)
+                slug
+                stockQuantity
+                stockStatus
+                hasAttributes
+                image {
+                  id
+                  sourceUrl
+                  cartSourceUrl: sourceUrl(size: THUMBNAIL)
+                  producCardSourceUrl: sourceUrl(size: WOOCOMMERCE_THUMBNAIL)
+                  altText
+                  title
+                }
+                attributes {
+                  nodes {
+                    name
+                    attributeId
+                    value
+                    label
+                  }
+                }
+              }
+            }
+          }
+          ... on ExternalProduct {
+            externalUrl
+            buttonText
+            attributes {
+              nodes {
+                variation
+                name
+                id
+                options
+                label
+                scope
+                ... on GlobalProductAttribute {
+                  terms(where: { orderby: MENU_ORDER, order: ASC }) {
+                    nodes {
+                      name
+                      slug
+                      taxonomyName
+                      databaseId
+                    }
+                  }
+                }
+              }
+            }
+          }
+          related(first: 5) {
+            nodes {
+              ... on SimpleProduct {
+                name
+                slug
+                price
+                rawPrice: price(format: RAW)
+                date
+                regularPrice
+                rawRegularPrice: regularPrice(format: RAW)
+                salePrice
+                rawSalePrice: salePrice(format: RAW)
+                stockStatus
+                stockQuantity
+                lowStockAmount
+                averageRating
+                weight
+                length
+                width
+                height
+                reviewCount
+                onSale
+                virtual
+                image {
+                  id
+                  sourceUrl
+                  cartSourceUrl: sourceUrl(size: THUMBNAIL)
+                  producCardSourceUrl: sourceUrl(size: WOOCOMMERCE_THUMBNAIL)
+                  altText
+                  title
+                }
+                galleryImages(first: 20) {
+                  nodes {
+                    id
+                    sourceUrl
+                    cartSourceUrl: sourceUrl(size: THUMBNAIL)
+                    producCardSourceUrl: sourceUrl(size: WOOCOMMERCE_THUMBNAIL)
+                    altText
+                    title
+                    databaseId
+                  }
+                }
+              }
+              ... on VariableProduct {
+                name
+                slug
+                price
+                rawPrice: price(format: RAW)
+                date
+                weight
+                length
+                width
+                height
+                image {
+                  id
+                  sourceUrl
+                  cartSourceUrl: sourceUrl(size: THUMBNAIL)
+                  producCardSourceUrl: sourceUrl(size: WOOCOMMERCE_THUMBNAIL)
+                  altText
+                  title
+                }
+                averageRating
+                reviewCount
+                onSale
+                regularPrice
+                rawRegularPrice: regularPrice(format: RAW)
+                salePrice
+                rawSalePrice: salePrice(format: RAW)
+                stockStatus
+                totalSales
+                stockQuantity
+                lowStockAmount
+                defaultAttributes {
+                  nodes {
+                    name
+                    attributeId
+                    value
+                    label
+                  }
+                }
+                variations(first: 100) {
+                  nodes {
+                    name
+                    databaseId
+                    price
+                    regularPrice
+                    salePrice
+                    rawSalePrice: salePrice(format: RAW)
+                    slug
+                    stockQuantity
+                    stockStatus
+                    hasAttributes
+                    image {
+                      id
+                      sourceUrl
+                      cartSourceUrl: sourceUrl(size: THUMBNAIL)
+                      producCardSourceUrl: sourceUrl(size: WOOCOMMERCE_THUMBNAIL)
+                      altText
+                      title
+                    }
+                    attributes {
+                      nodes {
+                        name
+                        attributeId
+                        value
+                        label
+                      }
+                    }
+                  }
+                }
+                galleryImages(first: 20) {
+                  nodes {
+                    id
+                    sourceUrl
+                    cartSourceUrl: sourceUrl(size: THUMBNAIL)
+                    producCardSourceUrl: sourceUrl(size: WOOCOMMERCE_THUMBNAIL)
+                    altText
+                    title
+                    databaseId
+                  }
+                }
+              }
+              ... on ExternalProduct {
+                externalUrl
+                buttonText
+              }
+            }
+          }
+          reviews {
+            averageRating
+            edges {
+              rating
+              node {
+                content
+                id
+                date
+                author {
+                  node {
+                    name
+                    avatar {
+                      url
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    console.log('Executing product query with slug:', productSlug);
+    console.log('Using GraphQL endpoint:', gqlClient.host);
+    
+    const result = await gqlClient.query(query, { slug: productSlug });
+    
+    if (result?.data?.product) {
+      product.value = result.data.product as Product;
+      console.log('Product fetched successfully:', product.value?.name, 'from endpoint:', gqlClient.host);
+    } else {
+      console.warn('No product found in response');
+      throw showError({ statusCode: 404, statusMessage: t('messages.shop.productNotFound') });
+    }
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    if ((error as any).statusCode === 404) {
+      throw error; // Re-throw 404 errors
+    }
+    loadingError.value = 'Failed to load product';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// Watch for store changes and refetch product
+watch(currentStore, async (newStore, oldStore) => {
+  if (newStore && newStore !== oldStore && product.value) {
+    console.log('Store changed, refetching product...');
+    await fetchProduct();
+  }
+}, { immediate: false });
+
+// Initialize when component mounts
+onMounted(async () => {
+  console.log('Product page mounted, current store:', currentStore.value?.site_name);
+  await initializeAndFetchProduct();
 });
 
-const { data } = await useAsyncGql('getProduct', { slug: productSlug });
-if (!data.value?.product) {
-  throw showError({ statusCode: 404, statusMessage: t('messages.shop.productNotFound') });
-}
-
-const product = ref<Product>(data.value.product as Product);
 const quantity = ref<number>(1);
 const activeVariation = ref<Variation | null>(null);
 const variation = ref<VariationAttribute[]>([]);
-const indexOfTypeAny = computed<number[]>(() => checkForVariationTypeOfAny(product.value));
+const indexOfTypeAny = computed<number[]>(() => product.value ? checkForVariationTypeOfAny(product.value) : []);
 const attrValues = ref();
 const isSimpleProduct = computed<boolean>(() => product.value?.type === ProductTypesEnum.SIMPLE);
 const isVariableProduct = computed<boolean>(() => product.value?.type === ProductTypesEnum.VARIABLE);
@@ -49,6 +470,8 @@ const type = computed(() => activeVariation.value || product.value);
 const selectProductInput = computed<any>(() => ({ productId: type.value?.databaseId, quantity: quantity.value })) as ComputedRef<AddToCartInput>;
 
 const mergeLiveStockStatus = (payload: Product): void => {
+  if (!product.value) return;
+  
   product.value.stockStatus = payload.stockStatus ?? product.value?.stockStatus;
 
   payload.variations?.nodes?.forEach((variation: Variation, index: number) => {
@@ -58,18 +481,21 @@ const mergeLiveStockStatus = (payload: Product): void => {
   });
 };
 
-onMounted(async () => {
-  try {
-    const { product } = await GqlGetStockStatus({ slug: productSlug });
-    if (product) mergeLiveStockStatus(product as Product);
-  } catch (error: any) {
-    const errorMessage = error?.gqlErrors?.[0].message;
-    if (errorMessage) console.error(errorMessage);
+// Fetch live stock status after product is loaded
+watch(product, async (newProduct) => {
+  if (newProduct) {
+    try {
+      const { product: stockProduct } = await GqlGetStockStatus({ slug: productSlug });
+      if (stockProduct) mergeLiveStockStatus(stockProduct as Product);
+    } catch (error: any) {
+      const errorMessage = error?.gqlErrors?.[0].message;
+      if (errorMessage) console.error(errorMessage);
+    }
   }
-});
+}, { immediate: true });
 
 const updateSelectedVariations = (variations: VariationAttribute[]): void => {
-  if (!product.value.variations) return;
+  if (!product.value?.variations) return;
 
   attrValues.value = variations.map((el) => ({ attributeName: el.name, attributeValue: el.value }));
   const clonedVariations = JSON.parse(JSON.stringify(variations));
@@ -108,8 +534,35 @@ const disabledAddToCart = computed(() => {
 </script>
 
 <template>
-  <main class="container relative py-6 xl:max-w-7xl">
-    <div v-if="product">
+  <!-- Loading State -->
+  <main v-if="isLoading" class="container relative py-6 xl:max-w-7xl">
+    <div class="flex items-center justify-center min-h-[400px]">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <p class="text-gray-600">Loading product...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Error State -->
+  <main v-else-if="loadingError" class="container relative py-6 xl:max-w-7xl">
+    <div class="flex items-center justify-center min-h-[400px]">
+      <div class="text-center">
+        <h1 class="text-2xl font-bold text-red-600 mb-4">Error</h1>
+        <p class="text-gray-600 mb-4">{{ loadingError }}</p>
+        <button 
+          @click="initializeAndFetchProduct" 
+          class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Product Content -->
+  <main v-else-if="product" class="container relative py-6 xl:max-w-7xl">
+    <div>
       <SEOHead :info="product" />
       <Breadcrumb :product class="mb-6" v-if="storeSettings.showBreadcrumbOnSingleProduct" />
 
@@ -119,7 +572,7 @@ const disabledAddToCart = computed(() => {
           class="relative flex-1"
           :main-image="product.image"
           :gallery="product.galleryImages!"
-          :node="type"
+          :node="type!"
           :activeVariation="activeVariation || {}" />
         <NuxtImg v-else class="relative flex-1 skeleton" src="/images/placeholder.jpg" :alt="product?.name || 'Product'" />
 
@@ -127,12 +580,12 @@ const disabledAddToCart = computed(() => {
           <div class="flex justify-between mb-4">
             <div class="flex-1">
               <h1 class="flex flex-wrap items-center gap-2 mb-2 text-2xl font-sesmibold">
-                {{ type.name }}
+                {{ type?.name }}
                 <LazyWPAdminLink :link="`/wp-admin/post.php?post=${product.databaseId}&action=edit`">Edit</LazyWPAdminLink>
               </h1>
               <StarRating :rating="product.averageRating || 0" :count="product.reviewCount || 0" v-if="storeSettings.showReviews" />
             </div>
-            <ProductPrice class="text-xl" :sale-price="type.salePrice" :regular-price="type.regularPrice" />
+            <ProductPrice class="text-xl" :sale-price="type?.salePrice" :regular-price="type?.regularPrice" />
           </div>
 
           <div class="grid gap-2 my-8 text-sm empty:hidden">
